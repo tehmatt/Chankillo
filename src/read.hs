@@ -1,5 +1,8 @@
-module Read (history, repl) where
+module Read (repl) where
+	import Data.List
 	import System.IO
+	import Parse
+	import Compile
 
 	prompt :: IO String
 	prompt = do
@@ -7,18 +10,22 @@ module Read (history, repl) where
 		hFlush stdout
 		getLine
 
-	history = [] :: [String]
-
 	prepend :: Monad m => a -> [a] -> m [a]
 	prepend x [] = return [x]
 	prepend x xs = return (x:xs)
 
-	repl :: IO ()
-	repl = do
+	repl :: [String] -> IO ()
+	repl history = do
 		maybeLine <- prompt;
 		case maybeLine of
 			"exit" -> return ()
 			"\EOT" -> return ()
 			line ->
-				prepend line history >>= \history -> putStrLn ("Input was " ++ line) >>
-				repl
+				let
+					l = validLineEnding line
+				in
+					do
+						history <- (prepend l history)
+						compiled <- compile $ reverse $ parse history
+						mapM_ putStrLn compiled
+						repl history
