@@ -13,8 +13,8 @@ module Read (history, readEvalPrintLoop) where
 	readEvalPrintLoop :: IO ()
 	readEvalPrintLoop =
 		putStr prompt >>
-		getLine >>= \line ->
-			case line of
+		getLine >>= \maybeLine ->
+			case maybeLine of
 				"exit" -> return ()
 				"\EOT" -> return ()
 				line ->
