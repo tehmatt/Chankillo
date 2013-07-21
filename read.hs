@@ -1,11 +1,14 @@
-:m System.IO
+module Read (readEvalPrintLoop) where
+	import System.IO
 
-prompt = ">>> "
+	prompt = ">>> " :: String
 
-readEvalPrintLoop :: IO ()
-readEvalPrintLoop = do
-	maybeLine <- getLine
-	case maybeLine of
-		Nothing -> return ()
-		Just "exit" -> return ()
-		Just line -> putStr "Input was " ++ line ++ "\n"
+	readEvalPrintLoop :: IO ()
+	readEvalPrintLoop = do
+		putStr prompt
+		maybeLine <- getLine
+		case maybeLine of
+			"exit" -> return ()
+			"\EOT" -> return ()
+			line ->	do
+				putStr $ "Input was " ++ line ++ "\n"
