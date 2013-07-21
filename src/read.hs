@@ -1,23 +1,31 @@
-module Read (history, readEvalPrintLoop) where
+module Read (repl) where
+	import Data.List
 	import System.IO
+	import Parse
+	import Compile
 
-	prompt = ">>> " :: String
-
-	history = [] :: [String]
+	prompt :: IO String
+	prompt = do
+		putStr ">>> "
+		hFlush stdout
+		getLine
 
 	prepend :: Monad m => a -> [a] -> m [a]
-	prepend x xs = case xs of
-		[] -> return [x]
-		xs -> return (x:xs)
+	prepend x [] = return [x]
+	prepend x xs = return (x:xs)
 
-	readEvalPrintLoop :: IO ()
-	readEvalPrintLoop =
-		putStr prompt >>
-		getLine >>= \maybeLine ->
-			case maybeLine of
-				"exit" -> return ()
-				"\EOT" -> return ()
-				line ->
-					prepend line history >>= \history ->
-					putStrLn ("Input was " ++ line) >>
-					readEvalPrintLoop
+	repl :: [String] -> IO ()
+	repl history = do
+		maybeLine <- prompt;
+		case maybeLine of
+			"exit" -> return ()
+			"\EOT" -> return ()
+			line ->
+				let
+					l = validLineEnding line
+				in
+					do
+						history <- (prepend l history)
+						compiled <- compile $ reverse $ parse history
+						mapM_ putStrLn compiled
+						repl history
