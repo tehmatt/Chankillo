@@ -20,12 +20,8 @@ module Read (repl) where
 		case maybeLine of
 			"exit" -> return ()
 			"\EOT" -> return ()
-			line ->
-				let
-					l = validLineEnding line
-				in
-					do
-						history <- (prepend l history)
-						compiled <- compile $ parse $ reverse history
-						mapM_ putStrLn compiled
-						repl history
+			line -> do
+					history <- (prepend (validLineEnding line) history)
+					compiled <- compile $ parse $ reverse history
+					mapM_ putStrLn compiled
+					repl history
