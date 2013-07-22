@@ -26,6 +26,6 @@ module Read (repl) where
 				in
 					do
 						history <- (prepend l history)
-						compiled <- compile $ reverse $ parse history
+						compiled <- compile $ parse $ reverse history
 						mapM_ putStrLn compiled
 						repl history
