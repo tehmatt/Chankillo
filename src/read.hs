@@ -22,6 +22,6 @@ module Read (repl) where
 			"\EOT" -> return ()
 			line -> do
 					history <- (prepend (validLineEnding line) history)
-					compiled <- compile $ parse $ reverse history
+					compiled <- compile $ reverse $ parse history
 					mapM_ putStrLn compiled
 					repl history
