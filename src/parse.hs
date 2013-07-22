@@ -7,6 +7,11 @@ module Parse (parse, validLineEnding) where
 		wordlist <- readFile "../resources/keywords"
 		return splitOn("\n") wordlist
 
+	operators :: IO [String]
+	operators = do
+		oplist <- readFile "../resources/operators"
+		return splitOn("\n") oplist
+
 	parse :: [String] -> [String]
 	parse lines = lines
 
