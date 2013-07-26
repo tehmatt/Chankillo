@@ -5,12 +5,12 @@ module Parse (parse, validLineEnding) where
 	keywords :: IO [String]
 	keywords = do
 		wordlist <- readFile "../resources/keywords"
-		return $ splitOn "\n" wordlist
+		return $ lines wordlist
 
 	operators :: IO [String]
 	operators = do
 		oplist <- readFile "../resources/operators"
-		return $ splitOn "\n" oplist
+		return $ lines oplist
 
 	parse :: [String] -> [String]
 	parse lines = lines
