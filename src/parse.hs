@@ -1,6 +1,5 @@
 module Parse (parse, validLineEnding) where
 	import Data.List
-	import Data.List.Split
 
 	keywords :: IO [String]
 	keywords = do
