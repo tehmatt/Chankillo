@@ -6,7 +6,7 @@ module Read (repl) where
 
 	prompt :: IO String
 	prompt = do
-		putStr ">>> "
+		putStr "\27[32m>>> \27[0m"
 		hFlush stdout
 		getLine
 
@@ -22,6 +22,5 @@ module Read (repl) where
 			"\EOT" -> return ()
 			line -> do
 					history <- (prepend (validLineEnding line) history)
-					compiled <- compile $ reverse $ parse history
-					mapM_ putStrLn compiled
+					compile $ reverse $ parse history
 					repl history

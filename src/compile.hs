@@ -3,8 +3,9 @@ module Compile (compile) where
 	import System.IO
 	import System.Process
 	import System.Directory
+	import System.Exit
 
-	compile :: [String] -> IO [String]
+	compile :: [String] -> IO Int
 	compile input =
 		let
 			path = "/tmpChankillo.c"
@@ -13,8 +14,7 @@ module Compile (compile) where
 			code <- wrapper input
 			writeFile (tmpDir ++ path) $ concat $ intersperse "\n" code
 			output <- compileCode (tmpDir ++ path)
-			result <- runCode
-			return result
+			runCode
 
 	getStarterCode :: IO [String]
 	getStarterCode = do
@@ -33,8 +33,11 @@ module Compile (compile) where
 		result <- readProcess "gcc" ["-o", (tmpDir ++ "/tmpChankillo"), "-lm", path] ""
 		return (if result == "" then [] else lines result)
 
-	runCode :: IO [String]
+	runCode :: IO Int
 	runCode = do
 		tmpDir <- getTemporaryDirectory
-		result <- readProcess (tmpDir ++ "/tmpChankillo") [] ""
-		return $ lines result
+		running <- runProcess (tmpDir ++ "/tmpChankillo") [] Nothing Nothing Nothing Nothing Nothing
+		exitCode <- waitForProcess running
+		return (case exitCode of
+			ExitSuccess -> 0
+			ExitFailure x -> x)
