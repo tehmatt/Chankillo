@@ -14,14 +14,12 @@ module Run (run) where
 		stdin_dup <- hDuplicate stdin
 		hDuplicateTo stdin_dup input
 		-- Create a lock and pass std(err|out) through wrapper functions
-		errLock <- newEmptyMVar
-		handler err errLock errWrap
-		outLock <- newEmptyMVar
-		handler out outLock outWrap
+		outLock <- handler out outWrap
+		errLock <- handler err errWrap
 		-- Wait for process and IO threads to finish, then cleanup
 		exitCode <- waitForProcess pid
-		waitFork errLock
 		waitFork outLock
+		waitFork errLock
 		hClose stdin_dup
 		-- Useless but extendable in the future
 		return (case exitCode of
@@ -30,8 +28,9 @@ module Run (run) where
 
 	-- Given a handle, fork and pass it's contents through
 	-- f before printing the result to stdout
-	handler :: Handle -> MVar () -> (String -> String) -> IO ()
-	handler h lock f =
+	handler :: Handle -> (String -> String) -> IO (MVar ())
+	handler h f = do
+		lock <- newEmptyMVar
 		ioFork lock
 			( do
 				output <- catch (hGetLine h) (\_ ->  return "")
@@ -39,6 +38,7 @@ module Run (run) where
 					"" -> return ()
 					output -> putStrLn (f output)
 			)
+		return lock
 
 	-- Color the input string red
 	errWrap :: String -> String
