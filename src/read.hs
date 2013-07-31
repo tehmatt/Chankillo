@@ -3,6 +3,8 @@ module Read (repl) where
 	import System.IO
 	import Parse
 	import Compile
+	import Run
+	import Types
 
 	prompt :: IO String
 	prompt = do
@@ -22,5 +24,8 @@ module Read (repl) where
 			"\EOT" -> return ()
 			line -> do
 					history <- (prepend (validLineEnding line) history)
-					compile $ reverse $ parse history
+					compiled <- compile $ reverse $ parse history
+					case compiled of
+						Compiled path -> run path
+						CompileError err -> putStrLn err
 					repl history

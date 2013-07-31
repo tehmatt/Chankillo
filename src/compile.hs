@@ -4,8 +4,10 @@ module Compile (compile) where
 	import System.Process
 	import System.Directory
 	import System.Exit
+	import Types
 
-	compile :: [String] -> IO Int
+	-- Returns the path of the executable
+	compile :: [String] -> IO Compiled
 	compile input =
 		let
 			path = "/tmpChankillo.c"
@@ -13,8 +15,7 @@ module Compile (compile) where
 			tmpDir <- getTemporaryDirectory;
 			code <- wrapper input
 			writeFile (tmpDir ++ path) $ concat $ intersperse "\n" code
-			output <- compileCode (tmpDir ++ path)
-			runCode
+			compileCode tmpDir path
 
 	getStarterCode :: IO [String]
 	getStarterCode = do
@@ -27,17 +28,10 @@ module Compile (compile) where
 		starterCode <- getStarterCode
 		return $ starterCode ++ ("int main() {":code) ++ ["}"]
 
-	compileCode :: FilePath -> IO [String]
-	compileCode path = do
-		tmpDir <- getTemporaryDirectory
-		result <- readProcess "gcc" ["-o", (tmpDir ++ "/tmpChankillo"), "-lm", path] ""
-		return (if result == "" then [] else lines result)
-
-	runCode :: IO Int
-	runCode = do
-		tmpDir <- getTemporaryDirectory
-		running <- runProcess (tmpDir ++ "/tmpChankillo") [] Nothing Nothing Nothing Nothing Nothing
-		exitCode <- waitForProcess running
-		return (case exitCode of
-			ExitSuccess -> 0
-			ExitFailure x -> x)
+	compileCode :: FilePath -> FilePath -> IO Compiled
+	compileCode tmpDir path = do
+		compiled <- readProcess "gcc" ["-o", execPath, "-lm", tmpDir ++ path] []
+		return (case compiled of
+			[] -> Compiled execPath
+			x -> CompileError compiled)
+		where execPath = (tmpDir ++ "/tmpChankillo")
