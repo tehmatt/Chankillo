@@ -31,14 +31,14 @@ module Run (run) where
 	handler :: Handle -> (String -> String) -> IO (MVar ())
 	handler h f = do
 		lock <- newEmptyMVar
-		ioFork lock
-			( do
-				output <- catch (hGetLine h) (\_ ->  return "")
-				case output of
-					"" -> return ()
-					output -> putStrLn (f output)
-			)
+		ioFork lock reader
 		return lock
+		where reader = do
+			output <- catch (hGetLine h) (\_ ->  return "")
+			case output of
+				"" -> return ()
+				output -> do
+					putStrLn  (f output) >> reader
 
 	-- Color the input string red
 	errWrap :: String -> String
