@@ -1,4 +1,5 @@
 module Run (run) where
+	import Control.Exception
 	import Control.Concurrent
 	import System.Process
 	import GHC.IO.Handle -- GHC Specific!
@@ -34,10 +35,10 @@ module Run (run) where
 		ioFork lock reader
 		return lock
 		where reader = do
-			output <- catch (hGetLine h) (\_ ->  return "")
+			output <- try (hGetLine h) :: IO (Either IOError String)
 			case output of
-				"" -> return ()
-				output -> do
+				Left _ -> return ()
+				Right output -> do
 					putStrLn  (f output) >> reader
 
 	-- Color the input string red

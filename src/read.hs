@@ -18,11 +18,11 @@ module Read (repl) where
 
 	repl :: [String] -> IO ()
 	repl history = do
-		maybeLine <- prompt;
-		case maybeLine of
-			"exit" -> return ()
-			"\EOT" -> return ()
-			line -> do
+		line <- prompt
+		case () of _
+				| elem line ["exit", ":q", "\EOT"] -> return ()
+				| elem line ["reset", ":e", ":r"] -> repl []
+				| otherwise -> do
 					history <- (prepend (validLineEnding line) history)
 					compiled <- compile $ reverse $ parse history
 					case compiled of
