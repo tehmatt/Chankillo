@@ -31,7 +31,7 @@ module Read (repl) where
 					case compiled of
 						Compiled path -> do
 							run path
-							repl history True
+							repl ((if (((take 6 line) == "printf") || ((take 6 $ drop 1 line) == "printf")) then tail else \x -> x) history) True
 						CompileError err -> do
 							putStr err
 							repl (tail history) False
