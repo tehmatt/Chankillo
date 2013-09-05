@@ -39,7 +39,7 @@ module Run (run) where
 			case output of
 				Left _ -> return ()
 				Right output -> do
-					putStrLn  (f output) >> reader
+					putStrLn (f output) >> reader
 
 	-- Color the input string red
 	errWrap :: String -> String

@@ -1,9 +1,10 @@
 module Compile (compile) where
+	import Control.Exception
+	import System.Directory
+	import System.Process
+	import System.Exit
 	import Data.List
 	import System.IO
-	import System.Process
-	import System.Directory
-	import System.Exit
 	import Types
 
 	-- Returns the path of the executable
@@ -30,8 +31,9 @@ module Compile (compile) where
 
 	compileCode :: FilePath -> FilePath -> IO Compiled
 	compileCode tmpDir path = do
-		compiled <- readProcess "gcc" ["-o", execPath, "-std=c99", "-lm", tmpDir ++ path] []
+		compiled <- try (readProcess "gcc" ["-o", execPath, "-std=c99", "-lm", "-O2", tmpDir ++ path] []) :: IO (Either IOError String)
 		return (case compiled of
-			[] -> Compiled execPath
-			x -> CompileError compiled)
+			Left e -> CompileError ""
+			Right [] -> Compiled execPath
+			Right e -> CompileError e)
 		where execPath = (tmpDir ++ "/tmpChankillo")

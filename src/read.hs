@@ -6,9 +6,12 @@ module Read (repl) where
 	import Run
 	import Types
 
-	prompt :: IO String
-	prompt = do
-		putStr "\27[32m>>> \27[0m"
+	prompt :: Bool -> IO String
+	prompt compiled = do
+		if compiled then
+			putStr "\27[32m✓ >>> \27[0m"
+		else
+			putStr "\27[31m✗ >>> \27[0m"
 		hFlush stdout
 		getLine
 
@@ -16,16 +19,19 @@ module Read (repl) where
 	prepend x [] = return [x]
 	prepend x xs = return (x:xs)
 
-	repl :: [String] -> IO ()
-	repl history = do
-		line <- prompt
+	repl :: [String] -> Bool -> IO ()
+	repl history compiled = do
+		line <- prompt compiled
 		case () of _
 				| elem line ["exit", ":q", "\EOT"] -> return ()
-				| elem line ["reset", ":e", ":r"] -> repl []
+				| elem line ["reset", ":e", ":r"] -> repl [] True
 				| otherwise -> do
-					history <- (prepend (validLineEnding line) history)
+					history <- prepend (validLineEnding line) history
 					compiled <- compile $ reverse $ parse history
 					case compiled of
-						Compiled path -> run path
-						CompileError err -> putStrLn err
-					repl history
+						Compiled path -> do
+							run path
+							repl history True
+						CompileError err -> do
+							putStr err
+							repl (tail history) False
