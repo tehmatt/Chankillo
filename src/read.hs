@@ -8,10 +8,7 @@ module Read (repl) where
 
 	prompt :: Bool -> IO String
 	prompt compiled = do
-		if compiled then
-			putStr "\27[32m✓ >>> \27[0m"
-		else
-			putStr "\27[31m✗ >>> \27[0m"
+		putStr ("\27[" ++ (if compiled then "32m✓" else "31m✗") ++ " >>> \27[0m")
 		hFlush stdout
 		getLine
 
