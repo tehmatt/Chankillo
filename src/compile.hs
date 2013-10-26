@@ -30,10 +30,14 @@ module Compile (compile) where
 		return $ starterCode ++ ("int main() {":code) ++ ["}"]
 
 	compileCode :: FilePath -> FilePath -> IO Compiled
-	compileCode tmpDir path = do
-		compiled <- try (readProcess "gcc" ["-o", execPath, "-std=c99", "-lm", "-O2", tmpDir ++ path] []) :: IO (Either IOError String)
-		return (case compiled of
-			Left e -> CompileError ""
-			Right [] -> Compiled execPath
-			Right e -> CompileError e)
-		where execPath = (tmpDir ++ "/tmpChankillo")
+	compileCode tmpDir path =
+		let
+			execPath = (tmpDir ++ "/tmpChankillo")
+			options = ["-o", execPath, "-std=c99", "-lm", "-O2", "-pipe", "-march=native"]
+			gccOptions = options ++ [tmpDir ++ path]
+		in do
+			compiled <- try (readProcess "gcc" gccOptions []) :: IO (Either IOError String)
+			return (case compiled of
+				Left e -> CompileError ""
+				Right [] -> Compiled execPath
+				Right e -> CompileError e)

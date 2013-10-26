@@ -20,15 +20,17 @@ module Read (repl) where
 	repl history compiled = do
 		line <- prompt compiled
 		case () of _
-				| elem line ["exit", ":q", "\EOT"] -> return ()
-				| elem line ["reset", ":e", ":r"] -> repl [] True
+				| line `elem` ["exit", ":q", "\EOT"] -> return ()
+				| line `elem` ["reset", ":e", ":r"] -> repl [] True
 				| otherwise -> do
 					history <- prepend (validLineEnding line) history
 					compiled <- compile $ reverse $ parse history
 					case compiled of
-						Compiled path -> do
-							run path
-							repl ((if (((take 6 line) == "printf") || ((take 6 $ drop 1 line) == "printf")) then tail else \x -> x) history) True
+						Compiled path -> let
+								h = (if take 6 line == "printf" then tail else \x -> x) history
+							in do
+								run path
+								repl h True
 						CompileError err -> do
 							putStr err
 							repl (tail history) False
